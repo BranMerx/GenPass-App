@@ -51,18 +51,18 @@ class PasswordGeneratorApp(App):
         self.root.add_widget(upper_layout)
 
         # Include Numerical Digits
-        self.digits_checkbox = CheckBox(active=True)
-        self.root.add_widget(BoxLayout(orientation='horizontal', spacing=10, children=[
-            Label(text="Include Numerical Digits:"),
-            self.digits_checkbox
-        ]))
+        digits_layout = BoxLayout(orientation ='horizontal', spacing = 10)
+        self.digits_checkbox = CheckBox(active = True)
+        digits_layout.add_widget(Label(text = "Include Numerical Digits:"))
+        digits_layout.add_widget(self.digits_checkbox)
+        self.root.add_widget(digits_layout)
 
         # Include Special Characters
-        self.special_checkbox = CheckBox(active=True)
-        self.root.add_widget(BoxLayout(orientation='horizontal', spacing=10, children=[
-            Label(text="Include Special Characters:"),
-            self.special_checkbox
-        ]))
+        special_layout = BoxLayout(orientation ='horizontal', spacing = 10)
+        self.special_checkbox = CheckBox(active = True)
+        special_layout.add_widget(Label(text = "Include Special Characters:"))
+        special_layout.add_widget(self.special_checkbox)
+        self.root.add_widget(special_layout)
 
         # Generate Button
         self.generate_button = Button(text="Generate Password")
