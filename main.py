@@ -1,8 +1,6 @@
-#App Logic Libraries
 import string
 import secrets
 import pyperclip
-
 
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -12,95 +10,138 @@ from kivy.uix.button import Button
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.popup import Popup
 
-# Password generation function
-def gen_password(length=12, upper_include=True, digits_include=True, specialChars_include=True):
-    if length < 6:
-        raise ValueError("Password must be at least six characters")
 
+# =========================
+# Password Logic (SECURE)
+# =========================
+def generate_password(length=12, use_upper=True, use_digits=True, use_special=True):
+    if length < 6:
+        raise ValueError("Password must be at least 6 characters")
+
+    char_pool = list(string.ascii_lowercase)
     password = []
 
-    characters = list(string.ascii_lowercase)  # Always include lowercase letters
-    if upper_include:
-        characters += list(string.ascii_uppercase)
-        password.append(secrets.choice(string.ascii_uppercase))  # Ensure at least one uppercase letter
-    if digits_include:
-        characters += list(string.digits)
-        password.append(secrets.choice(string.digits))  # Ensure at least one digit
-    if specialChars_include:
-        characters += list(string.punctuation)
-        password.append(secrets.choice(string.punctuation))  # Ensure at least one special character
+    if use_upper:
+        char_pool += list(string.ascii_uppercase)
+        password.append(secrets.choice(string.ascii_uppercase))
 
-    # Fill the remaining length with random characters from the combined set
+    if use_digits:
+        char_pool += list(string.digits)
+        password.append(secrets.choice(string.digits))
+
+    if use_special:
+        char_pool += list(string.punctuation)
+        password.append(secrets.choice(string.punctuation))
+
+    # Fill remaining characters
     while len(password) < length:
-        password.append(secrets.choice(characters))
+        password.append(secrets.choice(char_pool))
 
-    secrets.shuffle(password)
+    secrets.SystemRandom().shuffle(password)
     return ''.join(password)
 
-def check_strength(password):
-    
 
-# Main application class
+def check_strength(password):
+    score = 0
+    if len(password) >= 12:
+        score += 1
+    if any(c.isupper() for c in password):
+        score += 1
+    if any(c.isdigit() for c in password):
+        score += 1
+    if any(c in string.punctuation for c in password):
+        score += 1
+
+    if score <= 1:
+        return "Weak"
+    elif score == 2:
+        return "Moderate"
+    elif score == 3:
+        return "Strong"
+    else:
+        return "Very Strong"
+
+
+# =========================
+# App UI
+# =========================
 class PasswordGeneratorApp(App):
     def build(self):
-        self.root = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        self.root = BoxLayout(orientation='vertical', padding=12, spacing=10)
 
-        # Password Length Input
-        self.root.add_widget(Label(text="Password Length:"))
+        # Title
+        self.root.add_widget(Label(text="GenPass 🔐", font_size=22))
+
+        # Length Input
+        self.root.add_widget(Label(text="Password Length"))
         self.length_input = TextInput(text='12', multiline=False, input_filter='int')
         self.root.add_widget(self.length_input)
 
-        # Include Upper Case Letters
-        upper_layout = BoxLayout(orientation ='horizontal', spacing = 10)
-        self.upper_checkbox = CheckBox(active = True)
-        upper_layout.add_widget(Label(text = "Include Upper Case Letters:"))
-        upper_layout.add_widget(self.upper_checkbox)
-        self.root.add_widget(upper_layout)
+        # Checkboxes
+        self.upper_checkbox = CheckBox(active=True)
+        self.digits_checkbox = CheckBox(active=True)
+        self.special_checkbox = CheckBox(active=True)
 
-        # Include Numerical Digits
-        digits_layout = BoxLayout(orientation ='horizontal', spacing = 10)
-        self.digits_checkbox = CheckBox(active = True)
-        digits_layout.add_widget(Label(text = "Include Numerical Digits:"))
-        digits_layout.add_widget(self.digits_checkbox)
-        self.root.add_widget(digits_layout)
-
-        # Include Special Characters
-        special_layout = BoxLayout(orientation ='horizontal', spacing = 10)
-        self.special_checkbox = CheckBox(active = True)
-        special_layout.add_widget(Label(text = "Include Special Characters:"))
-        special_layout.add_widget(self.special_checkbox)
-        self.root.add_widget(special_layout)
+        self.root.add_widget(self._build_row("Include Uppercase", self.upper_checkbox))
+        self.root.add_widget(self._build_row("Include Digits", self.digits_checkbox))
+        self.root.add_widget(self._build_row("Include Special Characters", self.special_checkbox))
 
         # Generate Button
         self.generate_button = Button(text="Generate Password")
         self.generate_button.bind(on_press=self.generate_password)
         self.root.add_widget(self.generate_button)
 
-        # Display the Generated Password
-        self.root.add_widget(Label(text="Generated Password:"))
+        # Output
+        self.root.add_widget(Label(text="Generated Password"))
         self.password_output = TextInput(readonly=True, multiline=False)
         self.root.add_widget(self.password_output)
 
+        # Strength Label
+        self.strength_label = Label(text="Strength: ")
+        self.root.add_widget(self.strength_label)
+
+        # Copy Button
+        self.copy_button = Button(text="Copy to Clipboard")
+        self.copy_button.bind(on_press=self.copy_password)
+        self.root.add_widget(self.copy_button)
+
         return self.root
+
+    def _build_row(self, text, checkbox):
+        layout = BoxLayout(orientation='horizontal', spacing=10)
+        layout.add_widget(Label(text=text))
+        layout.add_widget(checkbox)
+        return layout
 
     def generate_password(self, instance):
         try:
             length = int(self.length_input.text)
-            upper = self.upper_checkbox.active
-            digits = self.digits_checkbox.active
-            special_chars = self.special_checkbox.active
+            password = generate_password(
+                length,
+                self.upper_checkbox.active,
+                self.digits_checkbox.active,
+                self.special_checkbox.active
+            )
 
-            password = gen_password(length, upper, digits, special_chars)
             self.password_output.text = password
+            self.strength_label.text = f"Strength: {check_strength(password)}"
 
         except ValueError as e:
             self.show_error(str(e))
 
+    def copy_password(self, instance):
+        if self.password_output.text:
+            pyperclip.copy(self.password_output.text)
+
     def show_error(self, message):
-        popup = Popup(title='Input Error',
-                      content=Label(text=message),
-                      size_hint=(None, None), size=(400, 200))
+        popup = Popup(
+            title='Input Error',
+            content=Label(text=message),
+            size_hint=(None, None),
+            size=(400, 200)
+        )
         popup.open()
+
 
 if __name__ == "__main__":
     PasswordGeneratorApp().run()
