@@ -3,3 +3,6 @@ A random password generator that follows the same principals as my standalone Ge
 The main purpose of this project is to learn how to develop mobile apps and I will be achieving this through the use of Python, Kivy, and other related resources. 
 
 One of the biggest challenges I had for this project was learning how exactly to develop Apps and how they differ between a regular web page or other sort of development-related project. 
+
+Updates 3/17/26:
+*Importing secrets library to provide cryptographically strong random numbers and secure tokens. 
