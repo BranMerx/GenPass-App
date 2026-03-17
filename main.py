@@ -1,5 +1,9 @@
-import random
+#App Logic Libraries
 import string
+import secrets
+import pyperclip
+
+
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -13,25 +17,28 @@ def gen_password(length=12, upper_include=True, digits_include=True, specialChar
     if length < 6:
         raise ValueError("Password must be at least six characters")
 
+    password = []
+
     characters = list(string.ascii_lowercase)  # Always include lowercase letters
     if upper_include:
         characters += list(string.ascii_uppercase)
+        password.append(secrets.choice(string.ascii_uppercase))  # Ensure at least one uppercase letter
     if digits_include:
         characters += list(string.digits)
+        password.append(secrets.choice(string.digits))  # Ensure at least one digit
     if specialChars_include:
         characters += list(string.punctuation)
+        password.append(secrets.choice(string.punctuation))  # Ensure at least one special character
 
-    password = []
-    if upper_include:
-        password.append(random.choice(string.ascii_uppercase))
-    if digits_include:
-        password.append(random.choice(string.digits))
-    if specialChars_include:
-        password.append(random.choice(string.punctuation))
-    password += [random.choice(characters) for _ in range(length - len(password))]
+    # Fill the remaining length with random characters from the combined set
+    while len(password) < length:
+        password.append(secrets.choice(characters))
 
-    random.shuffle(password)
+    secrets.shuffle(password)
     return ''.join(password)
+
+def check_strength(password):
+    
 
 # Main application class
 class PasswordGeneratorApp(App):
