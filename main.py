@@ -9,6 +9,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.popup import Popup
+from kivy.uix.image import Image
 
 
 # =========================
@@ -70,7 +71,7 @@ class PasswordGeneratorApp(App):
         self.root = BoxLayout(orientation='vertical', padding=12, spacing=10)
 
         # Title
-        self.root.add_widget(Label(text="GenPass 🔐", font_size=22))
+        self.root.add_widget(Image(source='logo.png', size_hint=(1, 0.3)))
 
         # Length Input
         self.root.add_widget(Label(text="Password Length"))
